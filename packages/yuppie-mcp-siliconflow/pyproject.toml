@@ -1,0 +1,53 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "yuppie-mcp-siliconflow"
+version = "0.1.0"
+description = "MCP server for SiliconFlow (image / video / speech) via Flux, Z-Image, Qwen-Image"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "yuppie", email = "yidaowanli@gmail.com" }
+]
+keywords = ["mcp", "model-context-protocol", "siliconflow", "flux", "image-generation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "yuppie-siliconflow>=0.1.0",
+    "mcp>=2.0.0,<3.0.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yuppie1949/yuppie-mcp-siliconflow"
+Repository = "https://github.com/yuppie1949/yuppie-mcp-siliconflow"
+
+[project.scripts]
+yuppie-mcp-siliconflow = "yuppie_mcp_siliconflow.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/yuppie_mcp_siliconflow"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/pyproject.toml",
+]
