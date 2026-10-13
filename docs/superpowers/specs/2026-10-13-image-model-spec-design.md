@@ -208,7 +208,8 @@ alias 单独放在模块级 `_ALIASES: dict[str, str]`(alias → 规范 id),由 
 ### 6.3 alias
 
 - `black-forest-labs/FLUX.1-Kontext-pro` → `FLUX.1-Kontext-max` 的 spec
-- `Qwen/Qwen-Image-Edit-2509` → `Qwen/Qwen-Image-Edit` 的 spec(**待实测确认 id 有效性**)
+
+`Qwen/Qwen-Image-Edit-2509`(`edit_image` 原先的默认模型)不设 alias —— 已于 2026-10-13 将默认编辑模型改为文档列出的 `Qwen/Qwen-Image-Edit`。若该 id 仍然有效,它会走未知模型的宽松透传路径照常工作。
 
 ## 7. 调用路径
 
@@ -370,7 +371,7 @@ edit_image(
 | 项 | 状态 |
 |---|---|
 | FLUX.1-schnell / FLUX.1-dev 返回的 S3 预签名 URL 签名无效(403) | 已知,`note` 字段标注,不作默认模型 |
-| `Qwen/Qwen-Image-Edit-2509` 未出现在文档模型列表中 | **待实测**;确认无效则改默认编辑模型为 `Qwen/Qwen-Image-Edit` |
+| `Qwen/Qwen-Image-Edit-2509`(原 `edit_image` 默认模型)不在文档模型列表中 | **已决策**:默认编辑模型改为文档列出的 `Qwen/Qwen-Image-Edit`,库常量与工具描述已同步 |
 | FLUX.2-flex 文档列出 `cfg`,但描述写"仅适用于 Qwen/Qwen-Image" | **待实测**;暂按其列出即支持处理 |
 | FLUX-1.1-pro 文档 `height` 的描述文字误写为 "Width of..." | 文档笔误,不影响实现 |
 | FLUX-1.1-pro-Ultra 同时有 `image_size` 含 `others` 与独立 `aspect_ratio` | 优先级文档未说明;本设计让 `aspect_ratio` 优先(第 7 节第一步第 3 条) |

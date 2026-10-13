@@ -88,7 +88,7 @@ async def tool_edit_image(
     image: Annotated[str, Field(description="待编辑图像的 URL 或 base64", min_length=1)],
     prompt: Annotated[str, Field(description="编辑指令", min_length=1)],
     model: Annotated[
-        str | None, Field(description="编辑模型，默认 Qwen/Qwen-Image-Edit-2509")
+        str | None, Field(description="编辑模型，默认 Qwen/Qwen-Image-Edit")
     ] = None,
 ) -> str:
     """基于已有图像按指令编辑。"""

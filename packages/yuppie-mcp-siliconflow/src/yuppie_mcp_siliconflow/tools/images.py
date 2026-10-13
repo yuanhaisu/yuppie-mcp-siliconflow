@@ -35,7 +35,7 @@ class EditImageInput(BaseModel):
 
     image: str = Field(..., min_length=1, description="待编辑图像的 URL 或 base64")
     prompt: str = Field(..., min_length=1, description="编辑指令，如“把背景换成海边”")
-    model: str | None = Field(None, description="编辑模型，默认 Qwen/Qwen-Image-Edit-2509")
+    model: str | None = Field(None, description="编辑模型，默认 Qwen/Qwen-Image-Edit")
 
 
 def _alt_text(prompt: str) -> str:

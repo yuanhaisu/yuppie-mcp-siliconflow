@@ -233,7 +233,7 @@
 | 项 | 仓库现状 | 文档/实际 | 处理建议 |
 |---|---|---|---|
 | 默认文生图模型 | `Tongyi-MAI/Z-Image-Turbo` | 一致 ✓ | 保持 |
-| 默认编辑模型 | `Qwen/Qwen-Image-Edit-2509` | 文档只列出 `Qwen/Qwen-Image-Edit` | 需核实 `-2509` 后缀是否仍有效 |
+| 默认编辑模型 | ~~`Qwen/Qwen-Image-Edit-2509`~~ `Qwen/Qwen-Image-Edit` | 文档只列出 `Qwen/Qwen-Image-Edit` | 已于 2026-10-13 改用文档列出的 ID |
 | `RESOLUTIONS` 枚举 | `1024x1024 / 960x1280 / 768x1024 / 720x1440 / 720x1280` | 这是 **FLUX-1.1-pro-Ultra / FLUX.1-dev** 的集 | 对各模型并非都合法，需按模型校验 |
 | `ASPECT_RATIOS` 映射 | 映射到 `1024x1024 / 768x1024 / 1024x768 / 576x1024 / 1024x576` | 其中 `1024x768 / 576x1024 / 1024x576` 只在 **FLUX.2-\*** 集里 | 同上；且这些模型根本不吃 `aspect_ratio` 字段 |
 | 默认回退尺寸 | `1024x1024` | Qwen-Image 的推荐 1:1 是 `1328x1328`；FLUX.2-\* 只到 512 档 | 需按模型给默认值 |

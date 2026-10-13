@@ -18,7 +18,7 @@ ASPECT_RATIOS: dict[str, str] = {
     "16:9": "1024x576",
 }
 
-DEFAULT_EDIT_MODEL = "Qwen/Qwen-Image-Edit-2509"
+DEFAULT_EDIT_MODEL = "Qwen/Qwen-Image-Edit"
 
 
 def resolve_image_size(resolution: str | None, aspect_ratio: str | None) -> str:
