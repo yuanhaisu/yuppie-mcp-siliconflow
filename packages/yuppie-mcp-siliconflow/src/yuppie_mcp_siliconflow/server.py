@@ -16,7 +16,7 @@ mcp = MCPServer(
     name="siliconflow_mcp",
     instructions=(
         "硅基流动（SiliconFlow）生成工具集：文生图、图生图/编辑、文生视频、语音合成，"
-        "以及账户余额查询与模型列表。默认文生图模型为 Tongyi-MAI/Z-Image-Turbo。"
+        "以及模型列表。默认文生图模型为 Tongyi-MAI/Z-Image-Turbo。"
     ),
     version=__version__,
 )
@@ -234,24 +234,8 @@ async def tool_generate_speech(
 
 
 # ═══════════════════════════════════════════
-# 账户工具
+# 模型工具
 # ═══════════════════════════════════════════
-
-# ✅
-@mcp.tool(
-    name="get_user_info",
-    annotations=ToolAnnotations(
-        title="查询账户信息",
-        read_only_hint=True,
-        destructive_hint=False,
-        idempotent_hint=True,
-        open_world_hint=True,
-    ),
-)
-async def tool_get_user_info() -> str:
-    """查询硅基流动账户信息与余额。"""
-    return await account.get_user_info()
-
 
 # ✅
 @mcp.tool(

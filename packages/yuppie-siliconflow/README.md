@@ -1,6 +1,6 @@
 # yuppie-siliconflow
 
-硅基流动（SiliconFlow）API 客户端库：文生图 / 图生图 / 文生视频 / 语音合成 / 账户信息。
+硅基流动（SiliconFlow）API 客户端库：文生图 / 图生图 / 文生视频 / 语音合成。
 
 **纯客户端库，不含 MCP、不依赖 `mcp` 包**，可在任意 Python 项目中直接使用。
 
@@ -51,7 +51,6 @@ asyncio.run(main())
 - `edit_image(...)` — 图生图 / 图像编辑
 - `submit_video_generation(...)` / `get_video_status(...)` / `generate_video(...)` — 文生视频
 - `generate_speech(...)` — 语音合成
-- `get_user_info()` — 账户信息 / 余额
 - `list_models()` — 拉取可用模型列表
 
 ## 注意事项

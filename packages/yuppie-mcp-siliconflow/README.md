@@ -8,7 +8,7 @@
 - **图生图 / 编辑** `edit_image`：基于 URL 或 base64 图像按指令编辑
 - **文生视频** `generate_video` / `submit_video_generation` / `get_video_status`：自动轮询
 - **语音合成** `generate_speech`：fish-speech / IndexTTS / CosyVoice
-- **账户工具** `get_user_info` / `list_models`：查询余额、列出可用模型
+- **模型列表** `list_models`：列出可用模型
 - **本地保存**：配置目录后自动把图像/视频/音频落盘
 
 ## 架构说明
@@ -84,7 +84,6 @@ claude mcp add siliconflow \
 | `get_video_status` | 查询视频任务状态 |
 | `generate_video` | 提交并轮询视频生成 |
 | `generate_speech` | 文字转语音 |
-| `get_user_info` | 查询余额与账户信息 |
 | `list_models` | 列出可用模型 |
 
 ## 注意事项

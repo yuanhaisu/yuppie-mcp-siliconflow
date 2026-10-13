@@ -1,4 +1,8 @@
-"""账户信息与模型列表（SiliconFlow /v1/user/info 与 /v1/models）"""
+"""模型列表（SiliconFlow /v1/models）
+
+注：账户信息接口 /v1/user/info 已被硅基流动于 2026-08-14 永久下线（HTTP 410），
+且官方尚未提供替代接口，故不再提供账户查询能力。
+"""
 
 from __future__ import annotations
 
@@ -24,30 +28,10 @@ _RELEVANT_KEYWORDS = (
 
 
 class AccountMixin:
-    """账户与模型元信息。"""
+    """模型元信息。"""
 
     _request: Any
     _raise_for_status: Any
-
-    async def get_user_info(self) -> dict[str, Any]:
-        """查询账户信息与余额。"""
-        resp = await self._request("GET", "/v1/user/info")
-        self._raise_for_status(resp, "查询账户信息")
-
-        body = resp.json()
-        if not body.get("status", True):
-            raise RuntimeError(f"SiliconFlow 返回失败：{body.get('message')}")
-
-        data = body.get("data", {})
-        return {
-            "id": data.get("id"),
-            "name": data.get("name"),
-            "email": data.get("email"),
-            "total_balance": data.get("totalBalance"),
-            "charge_balance": data.get("chargeBalance"),
-            "free_balance": data.get("balance"),
-            "status": data.get("status"),
-        }
 
     async def list_models(self, *, relevant_only: bool = True) -> list[str]:
         """拉取可用模型；默认只保留图像/视频/语音相关模型。"""

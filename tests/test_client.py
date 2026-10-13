@@ -45,7 +45,6 @@ def test_client_exposes_all_capabilities():
         "get_video_status",
         "generate_video",
         "generate_speech",
-        "get_user_info",
         "list_models",
     ):
         assert callable(getattr(client, method))

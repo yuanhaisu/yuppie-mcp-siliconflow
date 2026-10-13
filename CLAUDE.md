@@ -46,14 +46,14 @@ uv build packages/yuppie-mcp-siliconflow
   - `images.py` — `ImagesMixin`：`generate_image` / `edit_image`，含 `RESOLUTIONS`、`ASPECT_RATIOS`、`resolve_image_size`
   - `videos.py` — `VideosMixin`：`submit_video_generation` / `get_video_status` / `generate_video`
   - `audio.py` — `AudioMixin`：`generate_speech`，含 `SPEECH_MODELS`
-  - `account.py` — `AccountMixin`：`get_user_info` / `list_models`
+  - `account.py` — `AccountMixin`：`list_models`
 
 库方法返回结构化 `dict`，API 失败抛 `SiliconFlowError`（或 `RuntimeError`）。
 
 ### 壳包 `packages/yuppie-mcp-siliconflow/src/yuppie_mcp_siliconflow/`
 
 - **`tools/`**：MCP 工具层（Pydantic BaseModel 入参 + async 实现 + markdown 输出），跨包引用库包；`_client.py` 提供模块级单例懒加载
-- **`server.py`**：唯一 import mcp 的文件。`MCPServer` 注册 8 个工具，参数用 `Annotated[type, Field(...)]`
+- **`server.py`**：唯一 import mcp 的文件。`MCPServer` 注册 7 个工具，参数用 `Annotated[type, Field(...)]`
 
 ### 传输模式
 
@@ -77,3 +77,6 @@ uv build packages/yuppie-mcp-siliconflow
 
 `FLUX.1-schnell` / `FLUX.1-dev` 返回的 S3 预签名 URL 签名无效（403），默认模型用
 `Tongyi-MAI/Z-Image-Turbo`，由 `SILICONFLOW_MODEL` 覆盖。
+
+账户信息接口 `/v1/user/info` 已被硅基流动于 2026-08-14 永久下线（HTTP 410），官方尚未提供
+替代接口，故 `get_user_info` 工具与库方法已移除。
