@@ -1,7 +1,12 @@
-"""图片生成工具：generate_image / edit_image"""
+"""图片生成工具：generate_image / edit_image
+
+本模块**不 import mcp**：只产出中性结果对象（文本摘要 + 图片字节），
+由 ``server.py`` 负责转成 MCP 的 ``TextContent`` / ``ImageContent`` 内容块。
+"""
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -38,37 +43,69 @@ class EditImageInput(BaseModel):
     model: str | None = Field(None, description="编辑模型，默认 Qwen/Qwen-Image-Edit")
 
 
-def _alt_text(prompt: str) -> str:
-    cleaned = prompt[:50].replace('"', " ").replace("<", " ").replace(">", " ")
-    return cleaned + ("..." if len(prompt) > 50 else "")
+@dataclass
+class ImageData:
+    """单张图片的字节与格式，由 server 层包装成 MCP ``Image``。"""
+
+    data: bytes
+    format: str = "png"
+    url: str | None = None
+    local_path: str | None = None
 
 
-def _format_images(result: dict[str, Any], prompt: str) -> str:
-    alt = _alt_text(prompt)
+@dataclass
+class ImageToolResult:
+    """工具结果：文本摘要 + 待内联的图片块列表。"""
+
+    summary: str
+    images: list[ImageData] = field(default_factory=list)
+
+
+def _format_summary(result: dict[str, Any], action: str) -> str:
+    """拼文本摘要（模型名 / 尺寸 / Seed / 在线链接 / 本地路径）。
+
+    图片本体已由 ``ImageContent`` 块承载，这里**不再**输出 ``<img>`` 标签。
+    """
     lines: list[str] = []
     for idx, item in enumerate(result.get("images", []), start=1):
-        url = item.get("url")
-        local_path = item.get("local_path")
-        if local_path:
-            lines.append(f"{idx}. 本地文件：`{local_path}`")
-        if url:
-            lines.append(f'{idx}. 在线图片：<img src="{url}" alt="{alt}">')
-    if not lines:
-        return "❌ 生成图像失败：未返回任何图像"
+        if item.get("local_path"):
+            lines.append(f"{idx}. 本地文件：`{item['local_path']}`")
+        if item.get("url"):
+            lines.append(f"{idx}. 在线链接（24 小时内有效）：{item['url']}")
+        if not item.get("content"):
+            lines.append(f"{idx}. 该张图片未取到字节，仅能提供上面的链接")
 
     size = result.get("size")
-    seed = result.get("seed")
-    header = f"✅ 已生成 {size} 图像（模型：{result.get('model')}）" if size else (
-        f"✅ 图像生成完成（模型：{result.get('model')}）"
+    header = (
+        f"✅ 已{action} {size} 图像（模型：{result.get('model')}）"
+        if size
+        else f"✅ 图像{action}完成（模型：{result.get('model')}）"
     )
+    seed = result.get("seed")
     if seed is not None:
         header += f"，Seed：{seed}"
-    lines.append("")
-    lines.append("请为上面的 `<img>` 添加 `width` 属性（200~500 像素）后原样发送给用户。")
-    return "\n".join([header, *lines])
+
+    return "\n".join([header, *lines]) if lines else header
 
 
-async def generate_image(inp: GenerateImageInput) -> str:
+def _to_tool_result(result: dict[str, Any], action: str) -> ImageToolResult:
+    """把库包的返回结构转成工具结果对象。"""
+    return ImageToolResult(
+        summary=_format_summary(result, action),
+        images=[
+            ImageData(
+                data=item["content"],
+                format=item.get("format") or "png",
+                url=item.get("url"),
+                local_path=item.get("local_path"),
+            )
+            for item in result.get("images", [])
+            if item.get("content")
+        ],
+    )
+
+
+async def generate_image(inp: GenerateImageInput) -> ImageToolResult:
     """根据提示词生成图像。默认模型 Z-Image-Turbo 规避 S3 签名坑。"""
     try:
         client = get_client()
@@ -82,16 +119,16 @@ async def generate_image(inp: GenerateImageInput) -> str:
             negative_prompt=inp.negative_prompt,
             output_format=inp.output_format,
         )
-        return _format_images(result, inp.prompt)
+        return _to_tool_result(result, "生成")
     except Exception as exc:  # noqa: BLE001 - 统一转为可读错误
-        return f"❌ 生成图像失败：{exc}"
+        return ImageToolResult(summary=f"❌ 生成图像失败：{exc}")
 
 
-async def edit_image(inp: EditImageInput) -> str:
+async def edit_image(inp: EditImageInput) -> ImageToolResult:
     """基于已有图像按指令编辑。"""
     try:
         client = get_client()
         result = await client.edit_image(inp.image, inp.prompt, model=inp.model)
-        return _format_images(result, inp.prompt)
+        return _to_tool_result(result, "编辑")
     except Exception as exc:  # noqa: BLE001
-        return f"❌ 编辑图像失败：{exc}"
+        return ImageToolResult(summary=f"❌ 编辑图像失败：{exc}")

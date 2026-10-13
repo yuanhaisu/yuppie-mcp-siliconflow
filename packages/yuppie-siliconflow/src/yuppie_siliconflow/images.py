@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .files import download_file
+from .files import fetch_bytes, guess_image_format, save_binary_file
 
 DEFAULT_EDIT_MODEL = "Qwen/Qwen-Image-Edit"
 DEFAULT_IMAGE_SIZE = "1024x1024"
@@ -108,6 +108,43 @@ def resolve_image_size(
     return table.get("1:1", DEFAULT_IMAGE_SIZE)
 
 
+async def _collect_image(
+    url: str | None,
+    *,
+    save_dir: str | None,
+    prefix: str,
+) -> dict[str, Any]:
+    """取回单张图的字节，供上层内联为 MCP image 内容块。
+
+    取字节**总是**执行（内联展示的前提）；``save_dir`` 非空时才额外落盘。
+    任一环节失败都只降级、不中断主流程，保证至少能回吐 URL。
+    """
+    item: dict[str, Any] = {
+        "url": url,
+        "local_path": None,
+        "content": None,
+        "format": guess_image_format(url) if url else "png",
+    }
+    if not url:
+        return item
+
+    try:
+        content = await fetch_bytes(url)
+    except Exception as exc:  # noqa: BLE001 - 取字节失败不应中断主流程
+        print(f"[yuppie-siliconflow] 取图失败，仅返回 URL：{exc}")
+        return item
+
+    item["content"] = content
+
+    if save_dir:
+        try:
+            item["local_path"] = save_binary_file(content, save_dir, item["format"], prefix)
+        except Exception as exc:  # noqa: BLE001 - 落盘失败不应中断主流程
+            print(f"[yuppie-siliconflow] 落盘失败：{exc}")
+
+    return item
+
+
 class ImagesMixin:
     """图片生成能力。"""
 
@@ -129,7 +166,12 @@ class ImagesMixin:
         output_format: str = "png",
         save: bool = True,
     ) -> dict[str, Any]:
-        """生成图像，返回 ``{"model", "size", "seed", "images": [{"url", "local_path"}]}``。"""
+        """生成图像，返回 ``{"model", "size", "seed", "images": [...]}``。
+
+        每个 image 项为 ``{"url", "local_path", "content", "format"}``：
+        ``content`` 是图片字节（供上层内联为 MCP image 内容块），
+        ``local_path`` 仅在配置了 ``SILICONFLOW_IMAGE_DIR`` 时才有值。
+        """
         use_model = model or self._config.default_image_model
         size = resolve_image_size(image_size, aspect_ratio, use_model)
 
@@ -153,13 +195,11 @@ class ImagesMixin:
         if not images:
             raise RuntimeError("SiliconFlow 未返回任何图像")
 
-        results: list[dict[str, Any]] = []
-        for img in images:
-            url = img.get("url")
-            local_path: str | None = None
-            if save and url and self._config.image_dir:
-                local_path = await download_file(url, self._config.image_dir, "img")
-            results.append({"url": url, "local_path": local_path})
+        save_dir = self._config.image_dir if save else None
+        results = [
+            await _collect_image(img.get("url"), save_dir=save_dir, prefix="img")
+            for img in images
+        ]
 
         return {
             "model": use_model,
@@ -188,14 +228,12 @@ class ImagesMixin:
         if not images:
             raise RuntimeError("SiliconFlow 未返回任何图像")
 
-        url = images[0].get("url")
-        local_path: str | None = None
-        if save and url and self._config.image_dir:
-            local_path = await download_file(url, self._config.image_dir, "edit")
+        save_dir = self._config.image_dir if save else None
+        collected = await _collect_image(images[0].get("url"), save_dir=save_dir, prefix="edit")
 
         return {
             "model": use_model,
             "size": None,
             "seed": data.get("seed"),
-            "images": [{"url": url, "local_path": local_path}],
+            "images": [collected],
         }

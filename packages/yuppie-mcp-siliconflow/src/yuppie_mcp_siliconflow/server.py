@@ -6,7 +6,8 @@ import os
 from typing import Annotated
 
 from mcp.server.mcpserver import MCPServer
-from mcp.types import ToolAnnotations
+from mcp.server.mcpserver.utilities.types import Image
+from mcp.types import TextContent, ToolAnnotations
 from pydantic import Field
 
 from . import __version__
@@ -20,6 +21,17 @@ mcp = MCPServer(
     ),
     version=__version__,
 )
+
+
+def _to_content(result: images.ImageToolResult) -> list[TextContent | Image]:
+    """把工具结果转成 MCP 内容块：文本摘要 + 原生图片块。
+
+    图片以 ``ImageContent`` 返回，由客户端原生组件渲染 —— 不经过 markdown/HTML
+    sanitizer，也不依赖 24 小时过期的临时签名 URL。
+    """
+    content: list[TextContent | Image] = [TextContent(type="text", text=result.summary)]
+    content.extend(Image(data=item.data, format=item.format) for item in result.images)
+    return content
 
 
 # ═══════════════════════════════════════════
@@ -61,21 +73,24 @@ async def tool_generate_image(
         str | None, Field(description="负面提示词（仅部分模型支持）")
     ] = None,
     output_format: Annotated[str, Field(description="输出格式：png / jpeg")] = "png",
-) -> str:
+) -> list[TextContent | Image]:
     """根据提示词生成图像。
 
-    返回中包含一个 `<img>` 标签：请为其添加 `width` 属性（200~500 像素）
-    后原样发送给用户，以便直接显示图片。"""
-    return await images.generate_image(
-        images.GenerateImageInput(
-            prompt=prompt,
-            model=model,
-            aspect_ratio=aspect_ratio,
-            image_size=image_size,
-            num_images=num_images,
-            seed=seed,
-            negative_prompt=negative_prompt,
-            output_format=output_format,
+    图像已作为**图片块**返回，客户端会直接渲染 —— 无需再输出 `<img>` 标签、
+    也不要把 URL 当作图片发给用户。返回的文本里附带 24 小时有效的在线链接，
+    仅供人工需要时取用。"""
+    return _to_content(
+        await images.generate_image(
+            images.GenerateImageInput(
+                prompt=prompt,
+                model=model,
+                aspect_ratio=aspect_ratio,
+                image_size=image_size,
+                num_images=num_images,
+                seed=seed,
+                negative_prompt=negative_prompt,
+                output_format=output_format,
+            )
         )
     )
 
@@ -97,10 +112,10 @@ async def tool_edit_image(
     model: Annotated[
         str | None, Field(description="编辑模型，默认 Qwen/Qwen-Image-Edit")
     ] = None,
-) -> str:
-    """基于已有图像按指令编辑。"""
-    return await images.edit_image(
-        images.EditImageInput(image=image, prompt=prompt, model=model)
+) -> list[TextContent | Image]:
+    """基于已有图像按指令编辑。图像以**图片块**返回，直接展示即可。"""
+    return _to_content(
+        await images.edit_image(images.EditImageInput(image=image, prompt=prompt, model=model))
     )
 
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .base import SiliconFlowError, _SiliconFlowBase
 from .config import DEFAULT_IMAGE_MODEL, SiliconFlowConfig
-from .files import download_file, save_binary_file
+from .files import download_file, fetch_bytes, guess_image_format, save_binary_file
 from .images import (
     ASPECT_RATIOS,
     MODEL_ASPECT_SIZES,
@@ -26,6 +26,8 @@ __all__ = [
     "resolve_image_size",
     "download_file",
     "save_binary_file",
+    "fetch_bytes",
+    "guess_image_format",
     "__version__",
 ]
 

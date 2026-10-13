@@ -41,15 +41,17 @@ uv build packages/yuppie-mcp-siliconflow
 - **`__init__.py`**：`__version__` + `SiliconFlowClient`（mixin 聚合类）+ re-export 常量与配置
 - **`config.py`**：`SiliconFlowConfig`（dataclass），`from_env()` 读取并校验 `SILICONFLOW_API_KEY`，内置轻量 `.env` 加载（无第三方依赖）
 - **`base.py`**：`_SiliconFlowBase` —— httpx client、`_request`、`_format_error`、`_raise_for_status`；`SiliconFlowError`
-- **`files.py`**：`download_file` / `save_binary_file`（模块级函数，无 client）
+- **`files.py`**：`fetch_bytes`（裸 client 取字节，供内联）/ `guess_image_format` / `download_file` / `save_binary_file`（模块级函数，无 client）
 - **`images.py`** — `ImagesMixin`：`generate_image` / `edit_image`；含 `RESOLUTIONS`、`ASPECT_RATIOS`（通用比例表）、`MODEL_ASPECT_SIZES`（各模型的比例 → 尺寸）、`resolve_image_size`
 
 库方法返回结构化 `dict`，API 失败抛 `SiliconFlowError`（或 `RuntimeError`）。
 
 ### 壳包 `packages/yuppie-mcp-siliconflow/src/yuppie_mcp_siliconflow/`
 
-- **`tools/`**：MCP 工具层（Pydantic BaseModel 入参 + async 实现 + markdown 输出），跨包引用库包；`_client.py` 提供模块级单例懒加载
-- **`server.py`**：唯一 import mcp 的文件。`MCPServer` 注册 2 个工具，参数用 `Annotated[type, Field(...)]`
+- **`tools/`**：MCP 工具层（Pydantic BaseModel 入参 + async 实现），**不 import mcp**；产出中性结果对象
+  `ImageToolResult`（文本摘要 + `ImageData` 字节），跨包引用库包；`_client.py` 提供模块级单例懒加载
+- **`server.py`**：唯一 import mcp 的文件。`MCPServer` 注册 2 个工具，参数用 `Annotated[type, Field(...)]`；
+  `_to_content()` 把 `ImageToolResult` 转成 `list[TextContent | Image]`
 
 ### 传输模式
 
@@ -59,8 +61,10 @@ uv build packages/yuppie-mcp-siliconflow
 
 - `ruff`（line-length = 100）+ `mypy`（strict = true），配置在根 `pyproject.toml`
 - 工具参数通过 Pydantic BaseModel 校验
-- 工具返回 markdown 字符串；失败时返回 `❌ ...失败：{异常}`
-- 文生图返回的 `<img>` 标签由模型补 `width` 后原样展示
+- 工具返回 `list[TextContent | Image]`（文本摘要 + 原生图片块）；失败时只返回一条
+  `❌ ...失败：{异常}` 的 `TextContent`
+- 图片以**原生 MCP `ImageContent` 块**回传（服务端 `fetch_bytes` 下载字节内联），
+  **不要**再拼 `<img>` 标签或把签名 URL 当图片交给前端 —— 见「已知坑」
 
 ## 添加新工具
 
@@ -73,6 +77,16 @@ uv build packages/yuppie-mcp-siliconflow
 
 `FLUX.1-schnell` / `FLUX.1-dev` 返回的 S3 预签名 URL 签名无效（403），默认模型用
 `Tongyi-MAI/Z-Image-Turbo`，由 `SILICONFLOW_MODEL` 覆盖。
+
+图片**不要**回传临时签名 URL 让前端渲染：
+
+- 曾用「返回 `<img>` 标签、模型补 `width`」的形态，在 Cherry Studio 里显示为破图
+  （URL 经 `curl` 实测 200/真 PNG，是 raw HTML 的 `src` 过不了前端 sanitize 管线）。
+  现改为服务端 `fetch_bytes` 下载字节、工具返回原生 `ImageContent` 块。
+- 取字节必须用**裸** httpx client（不带 `Authorization`）：S3 只允许一种鉴权机制，
+  与 URL 里的 `X-Amz-*` 同时出现会 403。
+- `mimeType` 必须是 `image/png` —— S3 常回 `application/octet-stream`，
+  客户端靠 mimeType 决定渲不渲染。
 
 各模型的尺寸档位不同（512 档 / 1328 档 / 1024 档），比例到尺寸的映射**必须按模型查**
 `MODEL_ASPECT_SIZES`，不能用一张全局表 —— 默认模型 Z-Image 的推荐集里就没有 `1024x1024`。
