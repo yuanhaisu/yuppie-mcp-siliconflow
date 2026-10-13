@@ -44,8 +44,6 @@ uv build packages/yuppie-mcp-siliconflow
 - **`files.py`**：`download_file` / `save_binary_file`（模块级函数，无 client）
 - **mixin 模块（平铺在包根）**：
   - `images.py` — `ImagesMixin`：`generate_image` / `edit_image`，含 `RESOLUTIONS`、`ASPECT_RATIOS`、`resolve_image_size`
-  - `videos.py` — `VideosMixin`：`submit_video_generation` / `get_video_status` / `generate_video`
-  - `audio.py` — `AudioMixin`：`generate_speech`，含 `SPEECH_MODELS`
   - `account.py` — `AccountMixin`：`list_models`
 
 库方法返回结构化 `dict`，API 失败抛 `SiliconFlowError`（或 `RuntimeError`）。
@@ -53,7 +51,7 @@ uv build packages/yuppie-mcp-siliconflow
 ### 壳包 `packages/yuppie-mcp-siliconflow/src/yuppie_mcp_siliconflow/`
 
 - **`tools/`**：MCP 工具层（Pydantic BaseModel 入参 + async 实现 + markdown 输出），跨包引用库包；`_client.py` 提供模块级单例懒加载
-- **`server.py`**：唯一 import mcp 的文件。`MCPServer` 注册 7 个工具，参数用 `Annotated[type, Field(...)]`
+- **`server.py`**：唯一 import mcp 的文件。`MCPServer` 注册 3 个工具，参数用 `Annotated[type, Field(...)]`
 
 ### 传输模式
 

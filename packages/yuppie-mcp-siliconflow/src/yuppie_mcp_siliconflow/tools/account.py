@@ -10,7 +10,7 @@ from ._client import get_client
 class ListModelsInput(BaseModel):
     """list_models 入参。"""
 
-    relevant_only: bool = Field(True, description="仅返回图像/视频/语音相关模型")
+    relevant_only: bool = Field(True, description="仅返回图像相关模型")
 
 
 async def list_models(inp: ListModelsInput) -> str:

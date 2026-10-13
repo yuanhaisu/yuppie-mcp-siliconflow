@@ -15,14 +15,12 @@ def test_from_env_defaults(monkeypatch):
     monkeypatch.delenv("SILICONFLOW_BASE_URL", raising=False)
     monkeypatch.delenv("SILICONFLOW_MODEL", raising=False)
     monkeypatch.delenv("SILICONFLOW_IMAGE_DIR", raising=False)
-    monkeypatch.delenv("SILICONFLOW_AUDIO_DIR", raising=False)
 
     cfg = SiliconFlowConfig.from_env()
     assert cfg.api_key == "sk-test"
     assert cfg.base_url == DEFAULT_BASE_URL
     assert cfg.default_image_model == DEFAULT_IMAGE_MODEL
     assert cfg.image_dir is None
-    assert cfg.audio_dir is None
 
 
 def test_from_env_overrides_and_trailing_slash(monkeypatch):
@@ -30,11 +28,8 @@ def test_from_env_overrides_and_trailing_slash(monkeypatch):
     monkeypatch.setenv("SILICONFLOW_BASE_URL", "https://api.siliconflow.cn/")
     monkeypatch.setenv("SILICONFLOW_MODEL", "black-forest-labs/FLUX.1-Kontext-pro")
     monkeypatch.setenv("SILICONFLOW_IMAGE_DIR", "/tmp/imgs")
-    monkeypatch.delenv("SILICONFLOW_AUDIO_DIR", raising=False)
 
     cfg = SiliconFlowConfig.from_env()
     assert cfg.base_url == "https://api.siliconflow.cn"
     assert cfg.default_image_model == "black-forest-labs/FLUX.1-Kontext-pro"
     assert cfg.image_dir == "/tmp/imgs"
-    # audio_dir 未设 → 回退到 image_dir
-    assert cfg.audio_dir == "/tmp/imgs"

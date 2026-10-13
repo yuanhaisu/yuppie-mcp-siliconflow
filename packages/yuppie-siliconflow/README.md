@@ -1,6 +1,6 @@
 # yuppie-siliconflow
 
-硅基流动（SiliconFlow）API 客户端库：文生图 / 图生图 / 文生视频 / 语音合成。
+硅基流动（SiliconFlow）API 客户端库：文生图 / 图生图。
 
 **纯客户端库，不含 MCP、不依赖 `mcp` 包**，可在任意 Python 项目中直接使用。
 
@@ -40,8 +40,7 @@ asyncio.run(main())
 | `SILICONFLOW_API_KEY` | ✅ | 硅基流动 API Key |
 | `SILICONFLOW_BASE_URL` | | 默认 `https://api.siliconflow.com`（国内站改 `https://api.siliconflow.cn`） |
 | `SILICONFLOW_MODEL` | | 默认文生图模型，默认 `Tongyi-MAI/Z-Image-Turbo` |
-| `SILICONFLOW_IMAGE_DIR` | | 图片/视频保存目录，不设则只回传在线 URL |
-| `SILICONFLOW_AUDIO_DIR` | | 音频保存目录，回退到 `SILICONFLOW_IMAGE_DIR` |
+| `SILICONFLOW_IMAGE_DIR` | | 图片保存目录，不设则只回传在线 URL |
 
 > 也可不依赖环境变量，直接构造：`SiliconFlowClient(SiliconFlowConfig(api_key="sk-..."))`。
 
@@ -49,8 +48,6 @@ asyncio.run(main())
 
 - `generate_image(...)` — 文生图（支持分辨率、宽高比、种子、负面提示词、批量）
 - `edit_image(...)` — 图生图 / 图像编辑
-- `submit_video_generation(...)` / `get_video_status(...)` / `generate_video(...)` — 文生视频
-- `generate_speech(...)` — 语音合成
 - `list_models()` — 拉取可用模型列表
 
 ## 注意事项

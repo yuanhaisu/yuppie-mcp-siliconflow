@@ -1,6 +1,6 @@
 # yuppie-mcp-siliconflow
 
-硅基流动（SiliconFlow）MCP Server —— 让 AI 助手通过 MCP 协议生成**图像 / 视频 / 语音**。
+硅基流动（SiliconFlow）MCP Server —— 让 AI 助手通过 MCP 协议生成**图像**。
 
 合并自：
 
@@ -11,10 +11,8 @@
 
 - **文生图**：`prompt` + 分辨率 / 宽高比 / 种子 / 负面提示词 / 批量，返回 `<img>` 标签
 - **图生图 / 编辑**
-- **文生视频**：提交 + 自动轮询
-- **语音合成**：fish-speech / IndexTTS / CosyVoice
-- **账户工具**：余额查询、模型列表
-- **本地保存**：图像 / 视频 / 音频自动落盘
+- **模型列表**：列出可用图像模型
+- **本地保存**：生成的图像自动落盘
 
 ## 双包结构
 
@@ -44,8 +42,7 @@ MCP 客户端配置（Claude Code / Desktop / opencode）见
 | `SILICONFLOW_API_KEY` | ✅ | API Key |
 | `SILICONFLOW_BASE_URL` | | 默认 `https://api.siliconflow.com`（国内站 `https://api.siliconflow.cn`） |
 | `SILICONFLOW_MODEL` | | 默认文生图模型，默认 `Tongyi-MAI/Z-Image-Turbo` |
-| `SILICONFLOW_IMAGE_DIR` | | 图像/视频保存目录 |
-| `SILICONFLOW_AUDIO_DIR` | | 音频保存目录（回退到 `IMAGE_DIR`） |
+| `SILICONFLOW_IMAGE_DIR` | | 图像保存目录 |
 
 ## 开发命令
 

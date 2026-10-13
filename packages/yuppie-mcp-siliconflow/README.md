@@ -1,15 +1,13 @@
 # yuppie-mcp-siliconflow
 
-硅基流动（SiliconFlow）MCP Server — 让 AI 助手通过 MCP 协议生成图像、视频与语音。
+硅基流动（SiliconFlow）MCP Server — 让 AI 助手通过 MCP 协议生成图像。
 
 ## 特性
 
 - **文生图** `generate_image`：支持分辨率 / 宽高比 / 种子 / 负面提示词 / 批量；返回 `<img>` 标签，AI 加 `width` 后可直接在对话里显示
 - **图生图 / 编辑** `edit_image`：基于 URL 或 base64 图像按指令编辑
-- **文生视频** `generate_video` / `submit_video_generation` / `get_video_status`：自动轮询
-- **语音合成** `generate_speech`：fish-speech / IndexTTS / CosyVoice
-- **模型列表** `list_models`：列出可用模型
-- **本地保存**：配置目录后自动把图像/视频/音频落盘
+- **模型列表** `list_models`：列出可用图像模型
+- **本地保存**：配置目录后自动把生成的图像落盘
 
 ## 架构说明
 
@@ -71,8 +69,7 @@ claude mcp add siliconflow \
 | `SILICONFLOW_API_KEY` | ✅ | API Key |
 | `SILICONFLOW_BASE_URL` | | 默认 `https://api.siliconflow.com`（国内站 `https://api.siliconflow.cn`） |
 | `SILICONFLOW_MODEL` | | 默认文生图模型，默认 `Tongyi-MAI/Z-Image-Turbo` |
-| `SILICONFLOW_IMAGE_DIR` | | 图像/视频保存目录 |
-| `SILICONFLOW_AUDIO_DIR` | | 音频保存目录（回退到 `IMAGE_DIR`） |
+| `SILICONFLOW_IMAGE_DIR` | | 图像保存目录 |
 
 ## 工具列表
 
@@ -80,11 +77,7 @@ claude mcp add siliconflow \
 |------|------|
 | `generate_image` | 文生图 |
 | `edit_image` | 图生图 / 编辑 |
-| `submit_video_generation` | 提交视频任务，返回 requestId |
-| `get_video_status` | 查询视频任务状态 |
-| `generate_video` | 提交并轮询视频生成 |
-| `generate_speech` | 文字转语音 |
-| `list_models` | 列出可用模型 |
+| `list_models` | 列出可用图像模型 |
 
 ## 注意事项
 

@@ -13,12 +13,6 @@ _KNOWN_EXTENSIONS = (
     ".jpeg",
     ".webp",
     ".gif",
-    ".mp4",
-    ".webm",
-    ".mp3",
-    ".wav",
-    ".opus",
-    ".flac",
 )
 
 
@@ -50,8 +44,8 @@ async def download_file(url: str, save_dir: str, prefix: str = "gen") -> str:
 def save_binary_file(
     content: bytes,
     save_dir: str,
-    extension: str = "mp3",
-    prefix: str = "audio",
+    extension: str = "bin",
+    prefix: str = "file",
 ) -> str:
     """把二进制内容写入本地目录，返回本地绝对路径。"""
     target = Path(save_dir).expanduser()

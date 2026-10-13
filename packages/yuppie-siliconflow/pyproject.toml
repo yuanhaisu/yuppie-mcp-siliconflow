@@ -5,14 +5,14 @@ build-backend = "hatchling.build"
 [project]
 name = "yuppie-siliconflow"
 version = "0.1.0"
-description = "SiliconFlow API client library (image / video / speech) — no MCP dependency"
+description = "SiliconFlow API client library (image generation & editing) — no MCP dependency"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 authors = [
     { name = "yuppie", email = "yidaowanli@gmail.com" }
 ]
-keywords = ["siliconflow", "flux", "z-image", "image-generation", "tts", "video"]
+keywords = ["siliconflow", "flux", "z-image", "qwen-image", "image-generation"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",

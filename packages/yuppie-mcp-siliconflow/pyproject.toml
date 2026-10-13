@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "yuppie-mcp-siliconflow"
 version = "0.1.0"
-description = "MCP server for SiliconFlow (image / video / speech) via Flux, Z-Image, Qwen-Image"
+description = "MCP server for SiliconFlow image generation via Flux, Z-Image, Qwen-Image"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"

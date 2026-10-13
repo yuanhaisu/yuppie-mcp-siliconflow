@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-# list_models 的过滤关键字
+# list_models 的过滤关键字（图像模型）
 _RELEVANT_KEYWORDS = (
     "flux",
     "z-image",
@@ -17,13 +17,6 @@ _RELEVANT_KEYWORDS = (
     "sdxl",
     "kolors",
     "qwen-image",
-    "wan",
-    "i2v",
-    "t2v",
-    "speech",
-    "tts",
-    "cosyvoice",
-    "indextts",
 )
 
 
@@ -34,7 +27,7 @@ class AccountMixin:
     _raise_for_status: Any
 
     async def list_models(self, *, relevant_only: bool = True) -> list[str]:
-        """拉取可用模型；默认只保留图像/视频/语音相关模型。"""
+        """拉取可用模型；默认只保留图像相关模型。"""
         resp = await self._request("GET", "/v1/models")
         self._raise_for_status(resp, "拉取模型列表")
 
