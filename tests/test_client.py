@@ -41,6 +41,8 @@ def test_client_exposes_all_capabilities():
     for method in (
         "generate_image",
         "edit_image",
-        "list_models",
     ):
         assert callable(getattr(client, method))
+
+    # 账户能力已移除
+    assert not hasattr(client, "list_models")

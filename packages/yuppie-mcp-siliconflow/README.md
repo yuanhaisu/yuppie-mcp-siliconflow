@@ -4,9 +4,8 @@
 
 ## 特性
 
-- **文生图** `generate_image`：支持分辨率 / 宽高比 / 种子 / 负面提示词 / 批量；返回 `<img>` 标签，AI 加 `width` 后可直接在对话里显示
+- **文生图** `generate_image`：支持宽高比 / 显式尺寸 / 种子 / 负面提示词 / 张数；返回 `<img>` 标签，AI 加 `width` 后可直接在对话里显示
 - **图生图 / 编辑** `edit_image`：基于 URL 或 base64 图像按指令编辑
-- **模型列表** `list_models`：列出可用图像模型
 - **本地保存**：配置目录后自动把生成的图像落盘
 
 ## 架构说明
@@ -77,7 +76,6 @@ claude mcp add siliconflow \
 |------|------|
 | `generate_image` | 文生图 |
 | `edit_image` | 图生图 / 编辑 |
-| `list_models` | 列出可用图像模型 |
 
 ## 注意事项
 

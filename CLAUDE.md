@@ -42,16 +42,14 @@ uv build packages/yuppie-mcp-siliconflow
 - **`config.py`**：`SiliconFlowConfig`（dataclass），`from_env()` 读取并校验 `SILICONFLOW_API_KEY`，内置轻量 `.env` 加载（无第三方依赖）
 - **`base.py`**：`_SiliconFlowBase` —— httpx client、`_request`、`_format_error`、`_raise_for_status`；`SiliconFlowError`
 - **`files.py`**：`download_file` / `save_binary_file`（模块级函数，无 client）
-- **mixin 模块（平铺在包根）**：
-  - `images.py` — `ImagesMixin`：`generate_image` / `edit_image`，含 `RESOLUTIONS`、`ASPECT_RATIOS`、`resolve_image_size`
-  - `account.py` — `AccountMixin`：`list_models`
+- **`images.py`** — `ImagesMixin`：`generate_image` / `edit_image`；含 `RESOLUTIONS`、`ASPECT_RATIOS`（通用比例表）、`MODEL_ASPECT_SIZES`（各模型的比例 → 尺寸）、`resolve_image_size`
 
 库方法返回结构化 `dict`，API 失败抛 `SiliconFlowError`（或 `RuntimeError`）。
 
 ### 壳包 `packages/yuppie-mcp-siliconflow/src/yuppie_mcp_siliconflow/`
 
 - **`tools/`**：MCP 工具层（Pydantic BaseModel 入参 + async 实现 + markdown 输出），跨包引用库包；`_client.py` 提供模块级单例懒加载
-- **`server.py`**：唯一 import mcp 的文件。`MCPServer` 注册 3 个工具，参数用 `Annotated[type, Field(...)]`
+- **`server.py`**：唯一 import mcp 的文件。`MCPServer` 注册 2 个工具，参数用 `Annotated[type, Field(...)]`
 
 ### 传输模式
 
@@ -76,5 +74,8 @@ uv build packages/yuppie-mcp-siliconflow
 `FLUX.1-schnell` / `FLUX.1-dev` 返回的 S3 预签名 URL 签名无效（403），默认模型用
 `Tongyi-MAI/Z-Image-Turbo`，由 `SILICONFLOW_MODEL` 覆盖。
 
-账户信息接口 `/v1/user/info` 已被硅基流动于 2026-08-14 永久下线（HTTP 410），官方尚未提供
-替代接口，故 `get_user_info` 工具与库方法已移除。
+各模型的尺寸档位不同（512 档 / 1328 档 / 1024 档），比例到尺寸的映射**必须按模型查**
+`MODEL_ASPECT_SIZES`，不能用一张全局表 —— 默认模型 Z-Image 的推荐集里就没有 `1024x1024`。
+
+账户信息接口 `/v1/user/info` 已被硅基流动于 2026-08-14 永久下线（HTTP 410）；`list_models`
+也随工具面收敛一并移除，故库包不再有 `AccountMixin`。

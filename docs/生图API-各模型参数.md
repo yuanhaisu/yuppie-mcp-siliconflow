@@ -225,19 +225,28 @@
 - **`output_format` 不可用**：Qwen-Image、Z-Image、Kontext-dev、schnell、dev 共 5 个模型，固定输出不可选格式。
 - 分辨率风格分三派：**512 档枚举**（FLUX.2-*）、**1328 档大尺寸**（Qwen-Image）、**1024 档枚举 / `others`**（Ultra、schnell、dev）、**数值宽高**（1.1-pro）、**无 image_size 只有 aspect_ratio**（Kontext）。
 
-## 5. 与本仓库现状的差异
+## 5. 与本仓库实现的对齐情况
 
 对照 `packages/yuppie-siliconflow/src/yuppie_siliconflow/images.py` 与
-`packages/yuppie-mcp-siliconflow/src/yuppie_mcp_siliconflow/tools/images.py`：
+`packages/yuppie-mcp-siliconflow/src/yuppie_mcp_siliconflow/tools/images.py`（截至 2026-10-13）。
 
-| 项 | 仓库现状 | 文档/实际 | 处理建议 |
-|---|---|---|---|
-| 默认文生图模型 | `Tongyi-MAI/Z-Image-Turbo` | 一致 ✓ | 保持 |
-| 默认编辑模型 | ~~`Qwen/Qwen-Image-Edit-2509`~~ `Qwen/Qwen-Image-Edit` | 文档只列出 `Qwen/Qwen-Image-Edit` | 已于 2026-10-13 改用文档列出的 ID |
-| `RESOLUTIONS` 枚举 | `1024x1024 / 960x1280 / 768x1024 / 720x1440 / 720x1280` | 这是 **FLUX-1.1-pro-Ultra / FLUX.1-dev** 的集 | 对各模型并非都合法，需按模型校验 |
-| `ASPECT_RATIOS` 映射 | 映射到 `1024x1024 / 768x1024 / 1024x768 / 576x1024 / 1024x576` | 其中 `1024x768 / 576x1024 / 1024x576` 只在 **FLUX.2-\*** 集里 | 同上；且这些模型根本不吃 `aspect_ratio` 字段 |
-| 默认回退尺寸 | `1024x1024` | Qwen-Image 的推荐 1:1 是 `1328x1328`；FLUX.2-\* 只到 512 档 | 需按模型给默认值 |
-| 无脑发送字段 | `generate_image` 恒定发送 `image_size` + `output_format` + `batch_size`（+ 条件发送 `negative_prompt` / `num_inference_steps` / `guidance_scale`） | `batch_size` 仅 Qwen-Image / Ultra 支持；`output_format` 有 5 个模型不支持 | 改为按模型白名单过滤，否则可能报错 |
-| `aspect_ratio` 未透传 | `edit_image` / `generate_image` 都只把 aspect_ratio 折算成 image_size 后丢弃 | FLUX.1-Kontext / Ultra 用的是 `aspect_ratio` 字段本身 | 需要在客户端透传该字段 |
-| `cfg` / `safety_tolerance` / `raw` / `image_prompt*` / `prompt_upsampling` / `prompt_enhancement` | 未支持 | 文档中的合法参数 | 可作为后续扩展项 |
-| `input_image` vs `image` | `edit_image` 统一发 `image` | Kontext 用 `input_image`，Kontext-dev / Qwen-Image-Edit 用 `image` | 编辑路径需按模型分派字段名 |
+### 已处理
+
+| 项 | 处理 |
+|---|---|
+| 默认编辑模型 | 由 `Qwen/Qwen-Image-Edit-2509` 改为文档列出的 `Qwen/Qwen-Image-Edit` |
+| 各模型尺寸档位不同 | `images.py` 增加 `MODEL_ASPECT_SIZES`，按模型查「比例 → 尺寸」；未收录的模型回退通用表 `ASPECT_RATIOS` |
+| 默认回退尺寸不对 | 默认模型 Z-Image 的 `1:1` 由 `1024x1024` 修正为 `512x512`（它的推荐集里没有 1024 档） |
+| 工具参数名 | 对齐参考仓库 `stevefordev/siliconflow-mcp`：`resolution` → `image_size`、`batch_size` → `num_images` |
+| 工具数量 | 收敛为 `generate_image` / `edit_image` 两个 |
+
+### 有意不处理
+
+| 项 | 原因 |
+|---|---|
+| 按模型过滤不支持的字段 | 参考仓库也不过滤，交由服务端报错。代价是 `Z-Image` 仍会收到它不支持的 `batch_size` / `output_format` |
+| `cfg` / `safety_tolerance` / `raw` / `image_prompt*` / `prompt_upsampling` / `prompt_enhancement` | 未暴露；属调优参数，日常生图用不到 |
+| `num_inference_steps` / `guidance_scale` | 同上，已从 `generate_image` 移除 |
+| `input_image` vs `image` 字段分派 | `edit_image` 统一发 `image`，故 Kontext 家族经 MCP 走不通，需直连 API |
+| `aspect_ratio` 原生透传 | FLUX.1-Kontext / Ultra 吃的是 `aspect_ratio` 字段本身，本仓库统一折算成 `image_size` |
+| FLUX-1.1-pro 的 `width` / `height` | 同上，统一走 `image_size` |

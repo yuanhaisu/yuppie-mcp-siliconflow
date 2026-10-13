@@ -10,12 +10,12 @@ from mcp.types import ToolAnnotations
 from pydantic import Field
 
 from . import __version__
-from .tools import account, images
+from .tools import images
 
 mcp = MCPServer(
     name="siliconflow_mcp",
     instructions=(
-        "硅基流动（SiliconFlow）文生图工具集：文生图、图生图/编辑，以及模型列表。"
+        "硅基流动（SiliconFlow）图像工具集：文生图与图生图/编辑。"
         "默认文生图模型为 Tongyi-MAI/Z-Image-Turbo。"
     ),
     version=__version__,
@@ -23,7 +23,7 @@ mcp = MCPServer(
 
 
 # ═══════════════════════════════════════════
-# 图片工具
+# 图像工具
 # ═══════════════════════════════════════════
 
 # ✅
@@ -39,20 +39,27 @@ mcp = MCPServer(
 )
 async def tool_generate_image(
     prompt: Annotated[str, Field(description="图像提示词，建议英文效果更好", min_length=1)],
-    resolution: Annotated[
-        str | None,
-        Field(description="显式分辨率，如 1024x1024 / 960x1280 / 768x1024 / 720x1440 / 720x1280"),
-    ] = None,
-    aspect_ratio: Annotated[
-        str | None, Field(description="宽高比：1:1 / 3:4 / 4:3 / 9:16 / 16:9")
-    ] = None,
     model: Annotated[
         str | None,
         Field(description="模型 ID；不填用 SILICONFLOW_MODEL 或默认 Tongyi-MAI/Z-Image-Turbo"),
     ] = None,
+    aspect_ratio: Annotated[
+        str, Field(description="宽高比：1:1 / 3:4 / 4:3 / 9:16 / 16:9")
+    ] = "1:1",
+    image_size: Annotated[
+        str | None,
+        Field(
+            description=(
+                "显式尺寸 WxH，如 1024x1024 / 960x1280 / 768x1024；"
+                "填了就忽略 aspect_ratio"
+            )
+        ),
+    ] = None,
+    num_images: Annotated[int, Field(description="生成张数（1-4）", ge=1, le=4)] = 1,
     seed: Annotated[int | None, Field(description="随机种子，用于复现", ge=0)] = None,
-    negative_prompt: Annotated[str | None, Field(description="负面提示词")] = None,
-    batch_size: Annotated[int, Field(description="生成张数（1-4）", ge=1, le=4)] = 1,
+    negative_prompt: Annotated[
+        str | None, Field(description="负面提示词（仅部分模型支持）")
+    ] = None,
     output_format: Annotated[str, Field(description="输出格式：png / jpeg")] = "png",
 ) -> str:
     """根据提示词生成图像。
@@ -62,12 +69,12 @@ async def tool_generate_image(
     return await images.generate_image(
         images.GenerateImageInput(
             prompt=prompt,
-            resolution=resolution,
-            aspect_ratio=aspect_ratio,
             model=model,
+            aspect_ratio=aspect_ratio,
+            image_size=image_size,
+            num_images=num_images,
             seed=seed,
             negative_prompt=negative_prompt,
-            batch_size=batch_size,
             output_format=output_format,
         )
     )
@@ -95,30 +102,6 @@ async def tool_edit_image(
     return await images.edit_image(
         images.EditImageInput(image=image, prompt=prompt, model=model)
     )
-
-
-# ═══════════════════════════════════════════
-# 模型工具
-# ═══════════════════════════════════════════
-
-# ✅
-@mcp.tool(
-    name="list_models",
-    annotations=ToolAnnotations(
-        title="列出可用模型",
-        read_only_hint=True,
-        destructive_hint=False,
-        idempotent_hint=True,
-        open_world_hint=True,
-    ),
-)
-async def tool_list_models(
-    relevant_only: Annotated[
-        bool, Field(description="仅返回图像相关模型")
-    ] = True,
-) -> str:
-    """列出硅基流动可用模型。"""
-    return await account.list_models(account.ListModelsInput(relevant_only=relevant_only))
 
 
 def main() -> None:

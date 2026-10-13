@@ -48,7 +48,6 @@ asyncio.run(main())
 
 - `generate_image(...)` — 文生图（支持分辨率、宽高比、种子、负面提示词、批量）
 - `edit_image(...)` — 图生图 / 图像编辑
-- `list_models()` — 拉取可用模型列表
 
 ## 注意事项
 

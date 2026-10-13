@@ -9,24 +9,24 @@ from yuppie_siliconflow import ASPECT_RATIOS, RESOLUTIONS
 
 from ._client import get_client
 
+_ASPECT_LIST = " / ".join(ASPECT_RATIOS)
+_RESOLUTION_LIST = " / ".join(RESOLUTIONS)
+
 
 class GenerateImageInput(BaseModel):
     """generate_image 入参。"""
 
     prompt: str = Field(..., min_length=1, description="图像提示词，建议英文效果更好")
-    resolution: str | None = Field(
-        None,
-        description=f"显式分辨率，可选：{' / '.join(RESOLUTIONS)}；不填则用 aspect_ratio",
-    )
-    aspect_ratio: str | None = Field(
-        None, description=f"宽高比，可选：{' / '.join(ASPECT_RATIOS)}"
-    )
     model: str | None = Field(
         None, description="模型 ID；不填用 SILICONFLOW_MODEL 或默认 Tongyi-MAI/Z-Image-Turbo"
     )
+    aspect_ratio: str = Field("1:1", description=f"宽高比，可选：{_ASPECT_LIST}")
+    image_size: str | None = Field(
+        None, description=f"显式尺寸 WxH，如 {_RESOLUTION_LIST}；填了就忽略 aspect_ratio"
+    )
+    num_images: int = Field(1, ge=1, le=4, description="生成张数（1-4）")
     seed: int | None = Field(None, ge=0, description="随机种子，用于复现同一张图")
     negative_prompt: str | None = Field(None, description="负面提示词（仅部分模型支持）")
-    batch_size: int = Field(1, ge=1, le=4, description="生成张数（1-4）")
     output_format: str = Field("png", description="输出格式：png / jpeg")
 
 
@@ -74,12 +74,12 @@ async def generate_image(inp: GenerateImageInput) -> str:
         client = get_client()
         result = await client.generate_image(
             inp.prompt,
-            resolution=inp.resolution,
-            aspect_ratio=inp.aspect_ratio,
             model=inp.model,
+            aspect_ratio=inp.aspect_ratio,
+            image_size=inp.image_size,
+            num_images=inp.num_images,
             seed=inp.seed,
             negative_prompt=inp.negative_prompt,
-            batch_size=inp.batch_size,
             output_format=inp.output_format,
         )
         return _format_images(result, inp.prompt)
