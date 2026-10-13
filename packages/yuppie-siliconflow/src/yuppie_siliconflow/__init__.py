@@ -13,7 +13,7 @@ from .images import (
     resolve_image_size,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "SiliconFlowClient",
