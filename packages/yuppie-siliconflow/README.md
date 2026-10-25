@@ -41,6 +41,7 @@ asyncio.run(main())
 | `SILICONFLOW_BASE_URL` | | 默认 `https://api.siliconflow.com`（国内站改 `https://api.siliconflow.cn`） |
 | `SILICONFLOW_MODEL` | | 默认文生图模型，默认 `Tongyi-MAI/Z-Image-Turbo` |
 | `SILICONFLOW_IMAGE_DIR` | | 图片保存目录，不设则只回传在线 URL |
+| `SILICONFLOW_DISABLE_WATERMARK` | | 设 `1`/`true`/`on` 关闭出图右下角的「AI 生成」水印 |
 
 > 也可不依赖环境变量，直接构造：`SiliconFlowClient(SiliconFlowConfig(api_key="sk-..."))`。
 
@@ -48,6 +49,8 @@ asyncio.run(main())
 
 - `generate_image(...)` — 文生图（支持分辨率、宽高比、种子、负面提示词、批量）
 - `edit_image(...)` — 图生图 / 图像编辑
+- 两者都接受 `disable_watermark=True` 关闭右下角的「AI 生成」水印；
+  省略时跟随 `SILICONFLOW_DISABLE_WATERMARK`，未设置则保留水印
 
 ## 注意事项
 

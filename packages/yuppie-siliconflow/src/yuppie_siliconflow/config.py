@@ -9,6 +9,13 @@ from pathlib import Path
 DEFAULT_BASE_URL = "https://api.siliconflow.com"
 DEFAULT_IMAGE_MODEL = "Tongyi-MAI/Z-Image-Turbo"
 
+_TRUE_VALUES = {"1", "true", "yes", "on"}
+
+
+def _env_flag(raw: str | None) -> bool:
+    """把开关类环境变量解析成布尔；未设置或无法识别一律按 False。"""
+    return (raw or "").strip().lower() in _TRUE_VALUES
+
 
 def load_dotenv(path: str = ".env") -> None:
     """轻量 .env 加载器（无第三方依赖）。
@@ -37,6 +44,7 @@ class SiliconFlowConfig:
     base_url: str = DEFAULT_BASE_URL
     default_image_model: str = DEFAULT_IMAGE_MODEL
     image_dir: str | None = None
+    disable_watermark: bool = False
 
     @classmethod
     def from_env(cls) -> SiliconFlowConfig:
@@ -49,10 +57,12 @@ class SiliconFlowConfig:
         base_url = (os.getenv("SILICONFLOW_BASE_URL") or DEFAULT_BASE_URL).strip().rstrip("/")
         model = (os.getenv("SILICONFLOW_MODEL") or DEFAULT_IMAGE_MODEL).strip()
         image_dir = (os.getenv("SILICONFLOW_IMAGE_DIR") or "").strip() or None
+        disable_watermark = _env_flag(os.getenv("SILICONFLOW_DISABLE_WATERMARK"))
 
         return cls(
             api_key=api_key,
             base_url=base_url or DEFAULT_BASE_URL,
             default_image_model=model or DEFAULT_IMAGE_MODEL,
             image_dir=image_dir,
+            disable_watermark=disable_watermark,
         )

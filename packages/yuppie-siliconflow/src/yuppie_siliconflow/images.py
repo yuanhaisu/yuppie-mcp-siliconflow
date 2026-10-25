@@ -153,6 +153,17 @@ class ImagesMixin:
     _request: Any
     _raise_for_status: Any
 
+    def _watermark_headers(self, disable: bool | None) -> dict[str, str] | None:
+        """把「关闭水印」翻译成 SiliconFlow 的请求头。
+
+        ``disable`` 为 None 时回落到配置（``SILICONFLOW_DISABLE_WATERMARK``）。
+        返回 None 表示不附加任何头 —— 与旧版本行为完全一致（保留水印）。
+        """
+        enabled = self._config.disable_watermark if disable is None else disable
+        if not enabled:
+            return None
+        return {"X-Enable-Watermark": "0"}
+
     async def generate_image(
         self,
         prompt: str,
@@ -164,6 +175,7 @@ class ImagesMixin:
         seed: int | None = None,
         negative_prompt: str | None = None,
         output_format: str = "png",
+        disable_watermark: bool | None = None,
         save: bool = True,
     ) -> dict[str, Any]:
         """生成图像，返回 ``{"model", "size", "seed", "images": [...]}``。
@@ -171,6 +183,9 @@ class ImagesMixin:
         每个 image 项为 ``{"url", "local_path", "content", "format"}``：
         ``content`` 是图片字节（供上层内联为 MCP image 内容块），
         ``local_path`` 仅在配置了 ``SILICONFLOW_IMAGE_DIR`` 时才有值。
+
+        ``disable_watermark`` 为 None 时跟随 ``SILICONFLOW_DISABLE_WATERMARK``；
+        关闭后不再在右下角叠加「AI 生成」水印。
         """
         use_model = model or self._config.default_image_model
         size = resolve_image_size(image_size, aspect_ratio, use_model)
@@ -187,7 +202,12 @@ class ImagesMixin:
         if negative_prompt:
             payload["negative_prompt"] = negative_prompt
 
-        resp = await self._request("POST", "/v1/images/generations", json=payload)
+        resp = await self._request(
+            "POST",
+            "/v1/images/generations",
+            json=payload,
+            headers=self._watermark_headers(disable_watermark),
+        )
         self._raise_for_status(resp, "生成图像")
 
         data = resp.json()
@@ -214,13 +234,19 @@ class ImagesMixin:
         prompt: str,
         *,
         model: str | None = None,
+        disable_watermark: bool | None = None,
         save: bool = True,
     ) -> dict[str, Any]:
         """基于已有图像（URL 或 base64）按提示词编辑，返回同 generate_image 的结构。"""
         use_model = model or DEFAULT_EDIT_MODEL
         payload = {"model": use_model, "prompt": prompt, "image": image}
 
-        resp = await self._request("POST", "/v1/images/generations", json=payload)
+        resp = await self._request(
+            "POST",
+            "/v1/images/generations",
+            json=payload,
+            headers=self._watermark_headers(disable_watermark),
+        )
         self._raise_for_status(resp, "编辑图像")
 
         data = resp.json()

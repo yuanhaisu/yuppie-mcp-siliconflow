@@ -69,6 +69,7 @@ claude mcp add siliconflow \
 | `SILICONFLOW_BASE_URL` | | 默认 `https://api.siliconflow.com`（国内站 `https://api.siliconflow.cn`） |
 | `SILICONFLOW_MODEL` | | 默认文生图模型，默认 `Tongyi-MAI/Z-Image-Turbo` |
 | `SILICONFLOW_IMAGE_DIR` | | 图像保存目录 |
+| `SILICONFLOW_DISABLE_WATERMARK` | | 设 `1`/`true`/`on` 关闭出图右下角的「AI 生成」水印 |
 
 ## 工具列表
 
@@ -77,7 +78,13 @@ claude mcp add siliconflow \
 | `generate_image` | 文生图 |
 | `edit_image` | 图生图 / 编辑 |
 
+两个工具都支持 `disable_watermark` 参数：传 `true` 即关闭右下角的「AI 生成」水印；
+不传则跟随 `SILICONFLOW_DISABLE_WATERMARK`，两者都没指定时保留水印（与旧版一致）。
+
 ## 注意事项
 
 `FLUX.1-schnell` / `FLUX.1-dev` 在硅基流动返回的 S3 预签名 URL 签名无效，立即下载会
 `403 SignatureDoesNotMatch`。默认模型因此改用 `Tongyi-MAI/Z-Image-Turbo`。
+
+硅基流动默认在出图右下角叠加「AI 生成」水印（约 140×61 像素、浅灰半透明）。
+关闭方式见上：`disable_watermark` 参数或 `SILICONFLOW_DISABLE_WATERMARK` 环境变量。

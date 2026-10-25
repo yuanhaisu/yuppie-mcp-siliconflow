@@ -33,6 +33,13 @@ class GenerateImageInput(BaseModel):
     seed: int | None = Field(None, ge=0, description="随机种子，用于复现同一张图")
     negative_prompt: str | None = Field(None, description="负面提示词（仅部分模型支持）")
     output_format: str = Field("png", description="输出格式：png / jpeg")
+    disable_watermark: bool | None = Field(
+        None,
+        description=(
+            "关闭右下角的「AI 生成」水印；不填则跟随 SILICONFLOW_DISABLE_WATERMARK，"
+            "两者都未指定时保留水印"
+        ),
+    )
 
 
 class EditImageInput(BaseModel):
@@ -41,6 +48,13 @@ class EditImageInput(BaseModel):
     image: str = Field(..., min_length=1, description="待编辑图像的 URL 或 base64")
     prompt: str = Field(..., min_length=1, description="编辑指令，如“把背景换成海边”")
     model: str | None = Field(None, description="编辑模型，默认 Qwen/Qwen-Image-Edit")
+    disable_watermark: bool | None = Field(
+        None,
+        description=(
+            "关闭右下角的「AI 生成」水印；不填则跟随 SILICONFLOW_DISABLE_WATERMARK，"
+            "两者都未指定时保留水印"
+        ),
+    )
 
 
 @dataclass
@@ -118,6 +132,7 @@ async def generate_image(inp: GenerateImageInput) -> ImageToolResult:
             seed=inp.seed,
             negative_prompt=inp.negative_prompt,
             output_format=inp.output_format,
+            disable_watermark=inp.disable_watermark,
         )
         return _to_tool_result(result, "生成")
     except Exception as exc:  # noqa: BLE001 - 统一转为可读错误
@@ -128,7 +143,12 @@ async def edit_image(inp: EditImageInput) -> ImageToolResult:
     """基于已有图像按指令编辑。"""
     try:
         client = get_client()
-        result = await client.edit_image(inp.image, inp.prompt, model=inp.model)
+        result = await client.edit_image(
+            inp.image,
+            inp.prompt,
+            model=inp.model,
+            disable_watermark=inp.disable_watermark,
+        )
         return _to_tool_result(result, "编辑")
     except Exception as exc:  # noqa: BLE001
         return ImageToolResult(summary=f"❌ 编辑图像失败：{exc}")

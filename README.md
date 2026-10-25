@@ -42,6 +42,7 @@ MCP 客户端配置（Claude Code / Desktop / opencode）见
 | `SILICONFLOW_BASE_URL` | | 默认 `https://api.siliconflow.com`（国内站 `https://api.siliconflow.cn`） |
 | `SILICONFLOW_MODEL` | | 默认文生图模型，默认 `Tongyi-MAI/Z-Image-Turbo` |
 | `SILICONFLOW_IMAGE_DIR` | | 图像保存目录 |
+| `SILICONFLOW_DISABLE_WATERMARK` | | 设 `1`/`true`/`on` 关闭出图右下角的「AI 生成」水印 |
 
 ## 开发命令
 

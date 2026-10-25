@@ -73,6 +73,15 @@ async def tool_generate_image(
         str | None, Field(description="负面提示词（仅部分模型支持）")
     ] = None,
     output_format: Annotated[str, Field(description="输出格式：png / jpeg")] = "png",
+    disable_watermark: Annotated[
+        bool | None,
+        Field(
+            description=(
+                "关闭右下角的「AI 生成」水印；不填则跟随 SILICONFLOW_DISABLE_WATERMARK，"
+                "两者都未指定时保留水印"
+            )
+        ),
+    ] = None,
 ) -> list[TextContent | Image]:
     """根据提示词生成图像。
 
@@ -90,6 +99,7 @@ async def tool_generate_image(
                 seed=seed,
                 negative_prompt=negative_prompt,
                 output_format=output_format,
+                disable_watermark=disable_watermark,
             )
         )
     )
@@ -112,10 +122,26 @@ async def tool_edit_image(
     model: Annotated[
         str | None, Field(description="编辑模型，默认 Qwen/Qwen-Image-Edit")
     ] = None,
+    disable_watermark: Annotated[
+        bool | None,
+        Field(
+            description=(
+                "关闭右下角的「AI 生成」水印；不填则跟随 SILICONFLOW_DISABLE_WATERMARK，"
+                "两者都未指定时保留水印"
+            )
+        ),
+    ] = None,
 ) -> list[TextContent | Image]:
     """基于已有图像按指令编辑。图像以**图片块**返回，直接展示即可。"""
     return _to_content(
-        await images.edit_image(images.EditImageInput(image=image, prompt=prompt, model=model))
+        await images.edit_image(
+            images.EditImageInput(
+                image=image,
+                prompt=prompt,
+                model=model,
+                disable_watermark=disable_watermark,
+            )
+        )
     )
 
 
